@@ -1,13 +1,4 @@
-# BlueMatrix follow-up fixture (fx stream, 14 Oct 2026): a Helio-managed (segmented) release workflow.
-#
-# Every job runs only when Helio dispatches that job by its stage id (helio_stage_id), so Helio runs
-# test and production as two separate GitHub runs and can put its own controls (approval gates,
-# attestation) between them. production records one GitHub deployment carrying the managed evidence
-# contract (task helio-forward-release, rollback_workflow_id). No application is deployed.
-#
-# Behaviour switches are repository variables, so a fault never needs a new commit (and a new
-# helio/workflow/<sha> tag): QA_SCL11_20261025_29_TEST_SLEEP (seconds, default 40), QA_SCL11_20261025_29_TEST_MODE
-# (fail = the test job fails after its sleep; timeout = it sleeps past its 1-minute timeout).
+# SCL-11 derived TEST evidence fixture; no application deployed. Original evidence shell preserved.
 name: qa-scl11-20261025-29
 run-name: ${{ inputs.helio_execution_id }}
 
@@ -18,7 +9,7 @@ on:
         type: choice
         required: false
         default: fx120-scl11-20261025-test
-        options: [fx120-scl11-20261025-test, fx120-scl11-20261025-production]
+        options: [fx120-scl11-20261025-test]
       helio_execution_id:
         type: string
         required: false
@@ -52,27 +43,8 @@ jobs:
   test:
     if: ${{ always() && inputs.helio_stage_id == 'test' }}
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ vars.QA_SCL11_20261025_29_TEST_MODE == 'timeout' && 1 || 10 }}
-    environment: fx120-scl11-20261025-test
-    steps:
-      - name: Synthetic test work
-        shell: bash
-        env:
-          MODE: ${{ vars.QA_SCL11_20261025_29_TEST_MODE }}
-          SLEEP_SECONDS: ${{ vars.QA_SCL11_20261025_29_TEST_SLEEP || '40' }}
-        run: |
-          set -euo pipefail
-          if [ "$MODE" = "timeout" ]; then sleep 150; fi
-          sleep "$SLEEP_SECONDS"
-          if [ "$MODE" = "fail" ]; then echo "QA_SCL11_20261025_29_TEST_MODE=fail: synthetic test failure"; exit 1; fi
-          echo "synthetic tests passed"
-
-  production:
-    needs: test
-    if: ${{ always() && inputs.helio_stage_id == 'production' }}
-    runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment: fx120-scl11-20261025-production
+    environment: fx120-scl11-20261025-test
     permissions:
       contents: read
       deployments: write
@@ -81,7 +53,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          TARGET_ENVIRONMENT: fx120-scl11-20261025-production
+          TARGET_ENVIRONMENT: fx120-scl11-20261025-test
           HELIO_EXECUTION_ID: ${{ inputs.helio_execution_id }}
           HELIO_RELEASE_ID: ${{ inputs.helio_release_id }}
           WORKFLOW_REVISION: ${{ inputs.workflow_revision }}

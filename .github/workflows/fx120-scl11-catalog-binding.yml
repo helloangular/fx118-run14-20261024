@@ -1,0 +1,24 @@
+# SCL-11 source proposal only: genuine immutable catalog-template caller.
+# The helper establishes an OWN pipeline catalog addition; NEVER dispatch it.
+# No credentials/environment-variable inputs; no teardown until separately approved.
+name: fx120-scl11-catalog-helper
+run-name: 'scl11-helper-${{ inputs.helio_execution_id }}'
+on:
+  workflow_dispatch:
+    inputs:
+      helio_execution_id:
+        type: string
+        required: false
+        default: ''
+      helio_target_environment:
+        type: string
+        required: false
+        default: ''
+permissions:
+  contents: read
+jobs:
+  catalog:
+    uses: helloangular/helio-client-capacity-20260916/.github/workflows/helio-catalog-deploy-qa.yml@ce44f48a8fde6090a14a8aca9f05912e0cd2ad5f
+    with:
+      helio_execution_id: ${{ inputs.helio_execution_id }}
+      helio_target_environment: ${{ inputs.helio_target_environment }}
