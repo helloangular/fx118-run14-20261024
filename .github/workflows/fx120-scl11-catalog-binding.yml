@@ -2,7 +2,7 @@
 # The helper establishes an OWN pipeline catalog addition; NEVER dispatch it.
 # No credentials/environment-variable inputs; no teardown until separately approved.
 name: fx120-scl11-catalog-helper
-run-name: 'scl11-helper-${{ inputs.helio_execution_id }}'
+run-name: ${{ inputs.helio_execution_id }}
 on:
   workflow_dispatch:
     inputs:
